@@ -193,5 +193,8 @@ pub const yibit = zibit * 1024
 // assert dataunits.convert(500, dataunits.mbit, dataunits.kb) == 62500
 // ````
 pub fn convert(value f64, from DataSize, to DataSize) f64 {
+	if from == to {
+		return value
+	}
 	return f64(value * from / to)
 }
