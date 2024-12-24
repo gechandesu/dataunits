@@ -1,4 +1,10 @@
-## The data size units converter
+## Data size units converter
+
+Installation:
+
+```
+v install --git https://github.com/gechandesu/dataunits
+```
 
 Example:
 
