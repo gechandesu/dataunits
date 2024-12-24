@@ -70,11 +70,11 @@ fn main() {
 		eprintln('no value passed, see -help for info')
 		exit(2)
 	}
-	src := dataunits.from_string(flags.from) or {
+	src := dataunits.from_string(flags.from, ci: true) or {
 		eprintln('invalid source unit: ${err}')
 		exit(1)
 	}
-	dst := dataunits.from_string(flags.to) or {
+	dst := dataunits.from_string(flags.to, ci: true) or {
 		eprintln('invalid destination unit: ${err}')
 		exit(1)
 	}
