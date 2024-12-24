@@ -33,48 +33,6 @@ import os
 import flag
 import dataunits
 
-const units = {
-	'bit':    dataunits.bit
-	'nibble': dataunits.nibble
-	'bytes':  dataunits.bytes
-	'kb':     dataunits.kb
-	'mb':     dataunits.mb
-	'gb':     dataunits.gb
-	'tb':     dataunits.tb
-	'pb':     dataunits.pb
-	'zb':     dataunits.zb
-	'yb':     dataunits.yb
-	'kib':    dataunits.kib
-	'mib':    dataunits.mib
-	'gib':    dataunits.gib
-	'tib':    dataunits.tib
-	'pib':    dataunits.pib
-	'zib':    dataunits.zib
-	'yib':    dataunits.yib
-	'kbit':   dataunits.kbit
-	'mbit':   dataunits.mbit
-	'gbit':   dataunits.gbit
-	'tbit':   dataunits.tbit
-	'pbit':   dataunits.pbit
-	'zbit':   dataunits.zbit
-	'ybit':   dataunits.ybit
-	'kibit':  dataunits.kibit
-	'mibit':  dataunits.mibit
-	'gibit':  dataunits.gibit
-	'tibit':  dataunits.tibit
-	'pibit':  dataunits.pibit
-	'zibit':  dataunits.zibit
-	'yibit':  dataunits.yibit
-}
-
-fn units_str() string {
-	mut str := []string{}
-	for key, _ in units {
-		str << key
-	}
-	return str.join(', ')
-}
-
 @[name: 'dataunit']
 struct FlagConfig {
 	help bool
@@ -96,7 +54,7 @@ fn main() {
 		flags.value = no_matches[0].f64()
 	}
 	if flags.help {
-		println('convert the value between *from* and *to* units.')
+		println('convert the value between data size units.')
 		println('usage: dataunit -f <unit> -t <unit> <value>')
 		println('options:')
 		println('  -help      print this help message and exit')
@@ -112,15 +70,15 @@ fn main() {
 		eprintln('no value passed, see -help for info')
 		exit(2)
 	}
-	unit_from := units[flags.from.to_lower()] or {
-		eprintln('invalid unit ${flags.from}, valid ones: ${units_str()}')
+	src := dataunits.from_string(flags.from) or {
+		eprintln('invalid source unit: ${err}')
 		exit(1)
 	}
-	unit_to := units[flags.to.to_lower()] or {
-		eprintln('invalid unit ${flags.to}, valid ones: ${units_str()}')
+	dst := dataunits.from_string(flags.to) or {
+		eprintln('invalid destination unit: ${err}')
 		exit(1)
 	}
-	result := '${dataunits.convert(flags.value, unit_from, unit_to):.20f}'
+	result := '${dataunits.convert(flags.value, src, dst):.20f}'
 	splitted := result.split('.')
 	if splitted[1].contains_only('0') {
 		println(splitted[0])
