@@ -37,8 +37,8 @@ pub fn (d DataSize) nibble() f64 {
 	return f64(d / nibble)
 }
 
-pub fn (d DataSize) bytes() f64 {
-	return f64(d / bytes)
+pub fn (d DataSize) byte() f64 {
+	return f64(d / byte)
 }
 
 pub fn (d DataSize) kb() f64 {
@@ -171,9 +171,9 @@ pub fn (d DataSize) yibit() f64 {
 
 pub const bit = DataSize(1)
 pub const nibble = bit * 4
-pub const bytes = bit * 8
+pub const byte = bit * 8
 
-pub const kb = bytes * 1000
+pub const kb = byte * 1000
 pub const mb = kb * 1000
 pub const gb = mb * 1000
 pub const tb = gb * 1000
@@ -182,7 +182,7 @@ pub const eb = pb * 1000
 pub const zb = eb * 1000
 pub const yb = zb * 1000
 
-pub const kib = bytes * 1024
+pub const kib = byte * 1024
 pub const mib = kib * 1024
 pub const gib = mib * 1024
 pub const tib = gib * 1024
@@ -212,7 +212,7 @@ pub const yibit = zibit * 1024
 const units = {
 	'bit':    bit
 	'nibble': nibble
-	'bytes':  bytes
+	'byte':   byte
 	'kB':     kb
 	'MB':     mb
 	'GB':     gb
@@ -282,22 +282,22 @@ pub fn convert(value f64, from DataSize, to DataSize) f64 {
 
 // from_string parses input and returns the actual DataSize.
 // Note: Case insensitivity makes unit abbreviations such as `Mb` (megabit) and `MB` (megabyte)
-// ambiguous. Use `bit` suffix for bit units. The `b` suffix will be accepted as byte unit.
+// ambiguous. Use `bit` suffix for values in bits. The `b` suffix will be accepted as byte unit.
 // Example:
 // ```
 // assert dataunits.from_string('GiB')! == dataunits.gib
-// assert dataunits.from_string('M')! == dataunits.mib
-// assert dataunits.from_string('M', bits: true, metric: true)! == dataunits.mbit
-// assert dataunits.from_string('ZeTtAbYtEs', ci: true)! == dataunits.zb
+// assert dataunits.from_string('M')! == dataunits.mb
+// assert dataunits.from_string('M', in_bits: true)! == dataunits.mbit
+// assert dataunits.from_string('ZeTtAbYtEs', case_insensitive: true)! == dataunits.zb
 // ```
 pub fn from_string(input string, params ParseParams) !DataSize {
 	if !input.is_pure_ascii() {
 		return error('${input} non-ASCII characters is not allowed in data size unit')
 	}
 	unit := parse_unit_str(input, params)
-	if params.ci {
+	if params.case_insensitive {
 		for key, value in units {
-			if key.to_lower_ascii() == unit {
+			if key.to_lower_ascii() == unit.to_lower_ascii() {
 				return value
 			}
 		}
@@ -309,45 +309,52 @@ fn parse_unit_str(input string, params ParseParams) string {
 	mut unit := ''
 	match true {
 		input.to_lower_ascii() in ['byte', 'bytes'] {
-			return 'bytes'
+			return 'byte'
 		}
 		input.to_lower_ascii() in ['bit', 'bits'] {
 			return 'bit'
 		}
 		input.len == 1 {
-			if params.metric {
-				unit = input
-			} else {
+			if params.binary_size {
 				unit = input.to_upper_ascii() + 'i'
+			} else {
+				unit = input
 			}
-			if params.bits {
+			if params.in_bits {
 				unit += 'bit'
 			} else {
 				unit += 'B'
 			}
 			return unit
 		}
-		input.len == 2 && input[1] == u8(`b`) && params.ci == false {
-			if input[0] != u8(`k`) {
-				return input[..1] + 'bit'
+		input.len == 2 && input[1] == u8(`i`) {
+			if params.in_bits {
+				return input + 'bit'
 			}
-			return input[..1].to_upper_ascii() + 'bit'
+			return input + 'B'
+		}
+		input.len == 3 && input.ends_with('ib') && params.case_insensitive == false {
+			// Mib -> Mibit
+			return input[..2] + 'bit'
+		}
+		input.len == 2 && input[1] == u8(`b`) && params.case_insensitive == false {
+			// Mb -> Mbit
+			return input[..1] + 'bit'
 		}
 		else {
 			unit = input
 		}
 	}
-	if params.ci {
+	if params.case_insensitive {
 		unit = unit.to_lower_ascii()
 	}
 	if unit.len == 5 && unit.ends_with('ibit') {
 		// prevent Gibit --> Git transform
 		return unit
 	}
-	unit = unit.replace_each(maps.flat_map[string, string, string](prefixes, |k, v| [
-		k,
-		v,
-	]))
+	// transform full names to short ones: megabits --> mbit, etc.
+	prefixes_array := maps.flat_map[string, string, string](prefixes, |k, v| [k, v])
+	unit = unit.replace_each(prefixes_array)
 	unit = unit.replace_each(['bytes', 'B', 'byte', 'B']).replace_once('bits', 'bit')
 	return unit
 }
@@ -355,9 +362,12 @@ fn parse_unit_str(input string, params ParseParams) string {
 @[params]
 pub struct ParseParams {
 pub:
-	ci     bool // if true parse string in case insensitive mode
-	bits   bool // if true interpret single letter abbreviations as bit, otherwise as byte
-	metric bool // if ture apply single letter as metric prefix (power of ten), otherwise as binary
+	// if true parse string in case insensitive mode
+	case_insensitive bool
+	// if true accept input such 'M', 'Gi' as bits, otherwise as bytes
+	in_bits bool
+	// if true accept single letter prefix as binary (power of two), otherwise as metric prefix
+	binary_size bool
 }
 
 // to_string returns a string representation of data size unit in short form

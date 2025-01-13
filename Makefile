@@ -15,8 +15,8 @@ serve: clean doc
 
 build:
 	v -path "$$(realpath $$PWD/../)|@vlib|@vmodules" \
-		-prod -skip-unused -parallel-cc -cflags -static -cflags -s -d no_segfault_handler \
-		cmd/dataunit.v -o dataunit
+		-prod -parallel-cc -cflags -static -cflags -s -d no_segfault_handler \
+		cmd/dataunit -o dataunit
 
 clean:
 	rm -r $(DOC_DIR) || true

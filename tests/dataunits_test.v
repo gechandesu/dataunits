@@ -1,31 +1,39 @@
 import dataunits
 
 fn test_convert() {
-	assert (dataunits.nibble * 4).bytes() == 2
+	assert (dataunits.nibble * 4).byte() == 2
 	assert (dataunits.bit * 8).bit() == 8
-	assert (dataunits.bit * 8).bytes() == 1
+	assert (dataunits.bit * 8).byte() == 1
 	assert (dataunits.gib * 10).mib() == 10240
-	assert (dataunits.gib * 5000).bytes() == i64(5368709120000)
+	assert (dataunits.gib * 5000).byte() == i64(5368709120000)
 	assert (dataunits.mbit * 500).kb() == 62500
 	assert dataunits.convert(500, dataunits.mbit, dataunits.kb) == 62500
-	assert dataunits.DataSize(4000 * dataunits.gib).bytes() == f64(4294967296000)
+	assert dataunits.DataSize(4000 * dataunits.gib).byte() == f64(4294967296000)
 }
 
 fn test_from_string() {
 	assert dataunits.from_string('GiB')! == dataunits.gib
-	assert dataunits.from_string('M')! == dataunits.mib
-	assert dataunits.from_string('m', ci: true)! == dataunits.mib
-	assert dataunits.from_string('M', bits: true, metric: true)! == dataunits.mbit
-	assert dataunits.from_string('ZeTtAbYtEs', ci: true)! == dataunits.zb
-	assert dataunits.from_string('bytes')! == dataunits.bytes
-	assert dataunits.from_string('byte')! == dataunits.bytes
+	assert dataunits.from_string('M')! == dataunits.mb
+	assert dataunits.from_string('m', case_insensitive: true)! == dataunits.mb
+	assert dataunits.from_string('M', binary_size: true)! == dataunits.mib
+	assert dataunits.from_string('M', in_bits: true)! == dataunits.mbit
+	assert dataunits.from_string('ZeTtAbYtEs', case_insensitive: true)! == dataunits.zb
+	assert dataunits.from_string('bytes')! == dataunits.byte
+	assert dataunits.from_string('byte')! == dataunits.byte
 	assert dataunits.from_string('megabytes')! == dataunits.mb
 	assert dataunits.from_string('megabyte')! == dataunits.mb
 	assert dataunits.from_string('exbibit')! == dataunits.eibit
 	assert dataunits.from_string('Mb')! == dataunits.mbit
 	assert dataunits.from_string('MB')! == dataunits.mb
-	assert dataunits.from_string('Mb', ci: true)! == dataunits.mb
+	assert dataunits.from_string('Mb', case_insensitive: true)! == dataunits.mb
 	assert dataunits.from_string('Gibit')! == dataunits.gibit
-	assert dataunits.from_string('gibit', ci: true)! == dataunits.gibit
-	assert dataunits.from_string('Gib', ci: true)! == dataunits.gib
+	assert dataunits.from_string('gibit', case_insensitive: true)! == dataunits.gibit
+	assert dataunits.from_string('gIBiT', case_insensitive: true)! == dataunits.gibit
+	assert dataunits.from_string('Gib', case_insensitive: true)! == dataunits.gib
+	assert dataunits.from_string('Gib')! == dataunits.gibit
+	assert dataunits.from_string('k')! == dataunits.kb
+	assert dataunits.from_string('kB')! == dataunits.kb
+	assert dataunits.from_string('kb')! == dataunits.kbit
+	assert dataunits.from_string('Ki')! == dataunits.kib
+	assert dataunits.from_string('Gi')! == dataunits.gib
 }
