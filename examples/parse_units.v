@@ -18,8 +18,8 @@ fn (m Memory) mib() f64 {
 fn Memory.from_string(s string) !Memory {
 	mut re := regex.regex_opt(r'^(\d+)([a-zA-Z]+)$')!
 	re.match_string(s)
-	if re.groups.len < 2 {
-		return error('unable to parse string ${s}')
+	if re.groups.len != 2 {
+		return error("unable to parse string '${s}'")
 	}
 	value := re.get_group_by_id(s, 0).f64()
 	unit := dataunits.from_string(re.get_group_by_id(s, 1))!
