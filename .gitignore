@@ -1,6 +1,6 @@
 # Binaries for programs and plugins
 main
-dataunit
+/dataunit
 *.exe
 *.exe~
 *.so
