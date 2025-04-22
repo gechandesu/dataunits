@@ -1,14 +1,12 @@
-SRC_DIR ?= src
-DOC_DIR ?= doc
-TESTS_DIR ?= .
+DOC_DIR = doc
 
 all: test
 
 test:
-	v test $(TESTS_DIR)
+	v test .
 
 doc:
-	v doc -f html -m ./$(SRC_DIR) -o $(DOC_DIR)
+	v doc -f html -m . -o $(DOC_DIR)
 
 serve: clean doc
 	v -e "import net.http.file; file.serve(folder: '$(DOC_DIR)')"
