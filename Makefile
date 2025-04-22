@@ -14,8 +14,8 @@ serve: clean doc
 build:
 	v -path "$$(realpath $$PWD/../)|@vlib|@vmodules" \
 		-prod -parallel-cc -cflags -static -cflags -s -d no_segfault_handler \
-		cmd/dataunit -o dataunit
+		cmd/datasize -o datasize
 
 clean:
-	rm -r $(DOC_DIR) || true
-	rm dataunit || true
+	rm -r $(DOC_DIR) >/dev/null 2>&1 || true
+	rm datasize >/dev/null 2>&1|| true
