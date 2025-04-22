@@ -23,17 +23,12 @@
 
 // For more information, please refer to <https://unlicense.org/>
 
-/*
-	dataunit - a simple CLI tool for data units convertion.
-*/
-
 module main
 
 import os
 import flag
 import dataunits
 
-@[name: 'dataunit']
 struct FlagConfig {
 	help bool
 	from string @[short: f]
@@ -55,7 +50,7 @@ fn main() {
 	}
 	if flags.help {
 		println('convert the value between data size units.')
-		println('usage: dataunit -f <unit> -t <unit> <value>')
+		println('usage: datasize -f <unit> -t <unit> <value>')
 		println('options:')
 		println('  -help      print this help message and exit')
 		println('  -f, -from  source data unit')
