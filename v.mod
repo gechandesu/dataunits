@@ -1,7 +1,7 @@
 Module {
 	name: 'dataunits'
-	description: 'Data units converter'
-	version: '0.0.2'
+	description: 'Data unit converter'
+	version: '0.1.0'
 	license: 'Unlicense'
 	dependencies: []
 }
