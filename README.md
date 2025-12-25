@@ -1,9 +1,9 @@
-## Data size units converter
+# Data Unit Converter
 
 Installation:
 
 ```
-v install --git https://github.com/gechandesu/dataunits
+v install https://github.com/gechandesu/dataunits
 ```
 
 Example:

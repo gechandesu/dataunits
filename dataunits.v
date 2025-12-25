@@ -1,10 +1,10 @@
 // This is free and unencumbered software released into the public domain.
-
+//
 // Anyone is free to copy, modify, publish, use, compile, sell, or
 // distribute this software, either in source code form or as a compiled
 // binary, for any purpose, commercial or non-commercial, and by any
 // means.
-
+//
 // In jurisdictions that recognize copyright laws, the author or authors
 // of this software dedicate any and all copyright interest in the
 // software to the public domain. We make this dedication for the benefit
@@ -12,7 +12,7 @@
 // successors. We intend this dedication to be an overt act of
 // relinquishment in perpetuity of all present and future rights to this
 // software under copyright law.
-
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -20,12 +20,10 @@
 // OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
-
+//
 // For more information, please refer to <https://unlicense.org/>
 
 module dataunits
-
-import maps
 
 pub type DataSize = f64
 
@@ -209,7 +207,7 @@ pub const eibit = pibit * 1024
 pub const zibit = eibit * 1024
 pub const yibit = zibit * 1024
 
-const units = {
+const str_unit = {
 	'bit':    bit
 	'nibble': nibble
 	'byte':   byte
@@ -247,8 +245,46 @@ const units = {
 	'Yibit':  yibit
 }
 
+const unit_str = {
+	bit:    'bit'
+	nibble: 'nibble'
+	byte:   'byte'
+	kb:     'kB'
+	mb:     'MB'
+	gb:     'GB'
+	tb:     'TB'
+	pb:     'PB'
+	eb:     'EB'
+	zb:     'ZB'
+	yb:     'YB'
+	kib:    'KiB'
+	mib:    'MiB'
+	gib:    'GiB'
+	tib:    'TiB'
+	pib:    'PiB'
+	eib:    'EiB'
+	zib:    'ZiB'
+	yib:    'YiB'
+	kbit:   'kbit'
+	mbit:   'Mbit'
+	gbit:   'Gbit'
+	tbit:   'Tbit'
+	pbit:   'Pbit'
+	ebit:   'Ebit'
+	zbit:   'Zbit'
+	ybit:   'Ybit'
+	kibit:  'Kibit'
+	mibit:  'Mibit'
+	gibit:  'Gibit'
+	tibit:  'Tibit'
+	pibit:  'Pibit'
+	eibit:  'Eibit'
+	zibit:  'Zibit'
+	yibit:  'Yibit'
+}
+
 pub const prefixes = {
-	// Metric size (1000^N)
+	// Metric size (N * 1000)
 	'kilo':  'k'
 	'mega':  'M'
 	'giga':  'G'
@@ -257,7 +293,7 @@ pub const prefixes = {
 	'exa':   'E'
 	'zetta': 'Z'
 	'yotta': 'Y'
-	// Binary size (1024^N)
+	// Binary size (N * 1024)
 	'kibi':  'Ki'
 	'mebi':  'Mi'
 	'gibi':  'Gi'
@@ -268,9 +304,19 @@ pub const prefixes = {
 	'yobi':  'Yi'
 }
 
+// vfmt off
+const prefixes_array = [
+	'byte', 'B',
+	'kilo', 'k', 'mega', 'M', 'giga', 'G', 'tera', 'T',
+	'peta', 'P', 'exa', 'E', 'zetta', 'Z', 'yotta', 'Y',
+	'kibi', 'Ki', 'mebi', 'Mi', 'gibi', 'Gi', 'tebi', 'Ti',
+	'pebi', 'Pi', 'exbi', 'Ei', 'zebi', 'Zi', 'yobi', 'Yi'
+]
+// vfmt on
+
 // convert returns the value converted between the *from* and *to* units.
 // Example:
-// ```
+// ```v
 // assert dataunits.convert(500, dataunits.mbit, dataunits.kb) == 62500
 // ````
 pub fn convert(value f64, from DataSize, to DataSize) f64 {
@@ -281,10 +327,10 @@ pub fn convert(value f64, from DataSize, to DataSize) f64 {
 }
 
 // from_string parses input and returns the actual DataSize.
-// Note: Case insensitivity makes unit abbreviations such as `Mb` (megabit) and `MB` (megabyte)
-// ambiguous. Use `bit` suffix for values in bits. The `b` suffix will be accepted as byte unit.
+// Note: Case insensitivity makes unit abbreviations such as 'Mb' (megabit) and 'MB' (megabyte)
+// ambiguous. Use 'bit' suffix for values in bits. The 'b' suffix will be accepted as byte unit.
 // Example:
-// ```
+// ```v
 // assert dataunits.from_string('GiB')! == dataunits.gib
 // assert dataunits.from_string('M')! == dataunits.mb
 // assert dataunits.from_string('M', in_bits: true)! == dataunits.mbit
@@ -292,20 +338,20 @@ pub fn convert(value f64, from DataSize, to DataSize) f64 {
 // ```
 pub fn from_string(input string, params ParseParams) !DataSize {
 	if !input.is_pure_ascii() {
-		return error('${input} non-ASCII characters is not allowed in data size unit')
+		return error('${input} non-ASCII characters is not allowed in data unit')
 	}
-	unit := parse_unit_str(input, params)
+	unit := parse_str(input, params)
 	if params.case_insensitive {
-		for key, value in units {
+		for key, value in str_unit {
 			if key.to_lower_ascii() == unit.to_lower_ascii() {
 				return value
 			}
 		}
 	}
-	return units[unit] or { error('${input} is not a valid data size unit') }
+	return str_unit[unit] or { error('${input} is not a valid data unit') }
 }
 
-fn parse_unit_str(input string, params ParseParams) string {
+fn parse_str(input string, params ParseParams) string {
 	mut unit := ''
 	match true {
 		input.to_lower_ascii() in ['byte', 'bytes'] {
@@ -352,10 +398,7 @@ fn parse_unit_str(input string, params ParseParams) string {
 		// prevent Gibit --> Git transform
 		return unit
 	}
-	// transform full names to short ones: megabits --> mbit, etc.
-	prefixes_array := maps.flat_map[string, string, string](prefixes, |k, v| [k, v])
-	unit = unit.replace_each(prefixes_array)
-	unit = unit.replace_each(['bytes', 'B', 'byte', 'B']).replace_once('bits', 'bit')
+	unit = unit.all_before('s').replace_each(prefixes_array)
 	return unit
 }
 
@@ -370,13 +413,7 @@ pub:
 	binary_size bool
 }
 
-// to_string returns a string representation of data size unit in short form
-// e.g. kB, Mbit, GiB, etc.
+// to_string returns a string representation of data unit in short form e.g. kB, Mbit, GiB, etc.
 pub fn to_string(input DataSize) !string {
-	for key, value in units {
-		if value == input {
-			return key
-		}
-	}
-	return error('invalid input data size unit')
+	return unit_str[input] or { error('invalid input data unit') }
 }
